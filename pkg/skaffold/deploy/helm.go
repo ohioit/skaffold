@@ -183,7 +183,7 @@ func (h *HelmDeployer) deployRelease(ctx context.Context, out io.Writer, r lates
 	}
 
 	isInstalled := true
-	if err := h.helm(ctx, ioutil.Discard, false, "get", releaseName); err != nil {
+	if err := h.helm(ctx, ioutil.Discard, false, "get", "all", releaseName); err != nil {
 		color.Yellow.Fprintf(out, "Helm release %s not installed. Installing...\n", releaseName)
 		isInstalled = false
 	}
@@ -202,7 +202,7 @@ func (h *HelmDeployer) deployRelease(ctx context.Context, out io.Writer, r lates
 
 	var args []string
 	if !isInstalled {
-		args = append(args, "install", "--name", releaseName)
+		args = append(args, "install", releaseName)
 		args = append(args, h.Flags.Install...)
 	} else {
 		args = append(args, "upgrade", releaseName)
@@ -402,7 +402,7 @@ func (h *HelmDeployer) packageChart(ctx context.Context, r latest.HelmRelease) (
 
 func (h *HelmDeployer) getReleaseInfo(ctx context.Context, release string) (*bufio.Reader, error) {
 	var releaseInfo bytes.Buffer
-	if err := h.helm(ctx, &releaseInfo, false, "get", release); err != nil {
+	if err := h.helm(ctx, &releaseInfo, false, "get", "all", release); err != nil {
 		return nil, fmt.Errorf("error retrieving helm deployment info: %s", releaseInfo.String())
 	}
 	return bufio.NewReader(&releaseInfo), nil
@@ -461,7 +461,7 @@ func (h *HelmDeployer) deleteRelease(ctx context.Context, out io.Writer, r lates
 		return errors.Wrap(err, "cannot parse the release name template")
 	}
 
-	if err := h.helm(ctx, out, false, "delete", releaseName, "--purge"); err != nil {
+	if err := h.helm(ctx, out, false, "delete", releaseName); err != nil {
 		logrus.Debugf("deleting release %s: %v\n", releaseName, err)
 	}
 
